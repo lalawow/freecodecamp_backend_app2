@@ -15,38 +15,30 @@ module.exports = function (app, passport) {
 	}
 
 	var clickHandler = new ClickHandler();
-
+// For Freecodecamp back end project2: Request Header Parser Microservice
 	app.route('/').get(function (req, res) {
+//	    answer = {"ipaddress":"58.49.43.197","language":"en-US","software":"Windows NT 6.3; Win64; x64"}
+		var answer = {}
 
-			console.log("hello there!")
-		});
+		var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;            
+	    console.log("hello there! "+ip)
+	    answer["ipaddress"]=ip
 
-		app.route('/:_id').get(function (req, res) {
-            var id = req.params._id
-            var timeIndex
-            var answer = {}
-			console.log(id+"ok then!")
-			if (filterInt(id)>0) {
-				timeIndex = filterInt(id)*1000
+        var language =  req.headers["accept-language"]
+        answer["language"] = language.split(",")[0]
+        console.log("hello people " + language)
 
-			} else {
-				timeIndex = Date.parse(id)                       
-			}
-   
-			if (timeIndex==NaN) {
-				answer = {"unix":null,"natural":null}
-				} else {
-					var options = { year: 'numeric', month: 'long', day: 'numeric' };
-					var time = new Date()
-					time.setTime(timeIndex)
-					answer = {"unix":time.getTime()/1000,"natural":time.toLocaleDateString('en-US', options)}
-				}
-			
-            console.log(answer.unix+"  "+answer.natural)
-            res.writeHead(200, { 'Content-Type': 'application/json' })
+        
+        var option = /\(.*?\)/
+        var software = option.exec(req.headers['user-agent'])[0]
+        answer["software"] = software.substr(1,software.length-2)
+
+	    res.writeHead(200, { 'Content-Type': 'application/json' })
             res.end(JSON.stringify(answer))
 
 		});
+/*
+
 
 
 /*
@@ -88,8 +80,4 @@ module.exports = function (app, passport) {
 		*/
 };
 
-var filterInt = function (value) {
-  if(/^(\-|\+)?([0-9]+|Infinity)$/.test(value))
-    return Number(value);
-  return NaN;
-}
+
